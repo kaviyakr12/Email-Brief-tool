@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BriefDesk</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body onload="loadData()">
+
+  <div class="topbar">
+    <div class="logo">
+      <span class="logo-icon">📋</span>
+      <h2>MANAGER'S BRIEF DESK</h2>
+    </div>
+    <div class="topbar-actions">
+      <span id="last-updated"></span>
+      <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme" id="themeBtn">🌙</button>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <input id="search" placeholder="🔍  Search...." onkeyup="filterCards()">
+
+  <div id="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading your desk....</p>
+  </div>
+
+  <div id="content" style="display:none">
+    <div id="emails"></div>
+    <div id="meetings"></div>
+    <div id="approvals"></div>
+    <div id="vacation"></div>
+  </div>
+
+  <div class="actions">
+    <button class="refresh" onclick="loadData()">⟳ Refresh</button>
+    <button class="hide-btn" onclick="window.pywebview.api.hide()">✕ Hide</button>
+  </div>
+
+  <script>
+    // ── Toast ──────────────────────────────────────────
+    function toast(msg) {
+      const t = document.getElementById("toast");
+      t.innerText = msg;
+      t.className = "show";
+      setTimeout(() => t.className = "", 3200);
+    }
+
+    // ── Card builder ───────────────────────────────────
+    function card(item) {
+      const label = { high: "🔴 High", medium: "🟡 Med", low: "🟢 Low" }[item.priority] || "";
+      return `<div class="card ${item.priority}" onclick="openItem('${item.id}')">
+        <span class="card-badge">${label}</span>
+        <span class="card-text">${item.text}</span>
+      </div>`;
+    }
+
+    // ── Accordion state — only one open at a time ──────
+    let openSection = "emails";
+
+    function toggleSection(id) {
+      openSection = (openSection === id) ? null : id;
+      ["emails", "meetings", "approvals", "vacation"].forEach(sid => {
+        const wrap = document.getElementById(sid);
+        if (!wrap) return;
+        const body  = wrap.querySelector(".section-body");
+        const arrow = wrap.querySelector(".arrow");
+        if (!body || !arrow) return;
+        const isOpen = openSection === sid;
+        body.style.maxHeight  = isOpen ? body.scrollHeight + 32 + "px" : "0";
+        body.style.opacity    = isOpen ? "1" : "0";
+        body.style.padding    = isOpen ? "10px 12px 12px" : "0 12px";
+        arrow.style.transform = isOpen ? "rotate(180deg)" : "rotate(0deg)";
+        wrap.querySelector(".section-header").classList.toggle("open", isOpen);
+      });
+    }
+
+    // ── Section builder ────────────────────────────────
+    function section(id, title, data) {
+      const isOpen      = openSection === id;
+      const empty       = data.length === 0 ? `<p class="empty">Nothing here right now.</p>` : "";
+      const urgentCount = data.filter(x => x.priority === "high").length;
+      const badgeClass  = urgentCount > 0 ? "count urgent-count" : "count";
+
+      let cards = "";
+      data.forEach(d => cards += card(d));
+
+      document.getElementById(id).innerHTML = `
+        <div class="section">
+          <div class="section-header ${isOpen ? "open" : ""}" onclick="toggleSection('${id}')">
+            <span class="section-title">${title}</span>
+            <div class="section-meta">
+              <span class="${badgeClass}">${data.length}</span>
+              <span class="arrow">▼</span>
+            </div>
+          </div>
+          <div class="section-body" style="max-height:${isOpen ? "600px" : "0"};opacity:${isOpen ? "1" : "0"};padding:${isOpen ? "10px 12px 12px" : "0 12px"}">
+            ${empty}${cards}
+          </div>
+        </div>`;
+    }
+
+    // ── Load data ──────────────────────────────────────
+    function loadData() {
+      document.getElementById("loading").style.display = "flex";
+      document.getElementById("content").style.display = "none";
+
+      window.pywebview.api.load().then(d => {
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("content").style.display = "block";
+
+        section("emails",    "📨 Emails",    d.emails);
+        section("meetings",  "📅 Meetings",  d.meetings);
+        section("approvals", "✅ Approvals", d.approvals);
+        section("vacation",  "✈️ Vacation",  d.vacation);
+
+        // Show Outlook error only if Python explicitly returned one
+        if (d.error) {
+          toast("⚠️ " + d.error);
+          return;
+        }
+
+        // Timestamp
+        const now = new Date();
+        document.getElementById("last-updated").innerText =
+          `Updated ${now.getHours()}:${String(now.getMinutes()).padStart(2,"0")}`;
+      });
+    }
+
+    // ── Open item in Outlook ───────────────────────────
+    function openItem(id) {
+      window.pywebview.api.open_item(id);
+    }
+
+    // ── Search filter ──────────────────────────────────
+    function filterCards() {
+      const v = document.getElementById("search").value.toLowerCase();
+      document.querySelectorAll(".card").forEach(c => {
+        c.style.display = c.innerText.toLowerCase().includes(v) ? "flex" : "none";
+      });
+      document.querySelectorAll(".section").forEach(s => {
+        const visible = [...s.querySelectorAll(".card")].filter(c => c.style.display !== "none").length;
+        const empty   = s.querySelector(".empty");
+        if (empty) empty.style.display = visible === 0 ? "block" : "none";
+      });
+    }
+
+    // ── Theme toggle ───────────────────────────────────
+    function toggleTheme() {
+      document.body.classList.toggle("dark");
+      document.getElementById("themeBtn").innerText =
+        document.body.classList.contains("dark") ? "☀️" : "🌙";
+    }
+
+    // ── Maximize / Restore toggle ──────────────────────
+    let isMaximized = false;
+    function toggleMaximize() {
+      if (isMaximized) {
+        window.pywebview.api.restore();
+        document.getElementById("maxBtn").innerText = "⛶";
+        document.getElementById("maxBtn").title     = "Maximize";
+      } else {
+        window.pywebview.api.maximize();
+        document.getElementById("maxBtn").innerText = "❐";
+        document.getElementById("maxBtn").title     = "Restore";
+      }
+      isMaximized = !isMaximized;
+    }
+
+    // ── Auto-refresh every 60s ─────────────────────────
+    setInterval(loadData, 1200000);
+  </script>
+
+</body>
+</html>
