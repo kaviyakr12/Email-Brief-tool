@@ -78,6 +78,7 @@ storing passwords, access tokens, or other sensitive information in project file
 Specify an appropriate license before distributing or reusing this project.
 
 
+## Output Screenshots
 
-
+<img width="951" height="494" alt="Image" src="https://github.com/user-attachments/assets/2bb52f24-e878-47ad-8f6d-e3f485e26c53" />
 
