@@ -16,14 +16,14 @@ BriefDesk is a Python-based desktop productivity application which integrates wi
 
 ## Project Structure
 
-Email-Brief-tool-/
-│
-├── app.py          # Main Python application and Outlook integration
-├── index.html      # Application interface and JavaScript functionality
-├── style.css       # Interface styling and themes
-├── icon.ico        # Application system tray icon
-├── launch.bat      # Windows application launcher
-└── README.md       # Project documentation
+- **mail-Brief-tool/**
+  - `app.py` – Main Python application and Outlook integration
+  - `index.html` – Application interface and JavaScript functionality
+  - `style.css` – Interface styling and themes
+  - `icon.ico` – Application system tray icon
+  - `launch.bat` – Windows application launcher
+  - `README.md` – Project documentation
+    
 
 ## Technologies Used
 
