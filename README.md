@@ -20,7 +20,6 @@ BriefDesk is a Python-based desktop productivity application which integrates wi
   - `app.py` – Main Python application and Outlook integration
   - `index.html` – Application interface and JavaScript functionality
   - `style.css` – Interface styling and themes
-  - `icon.ico` – Application system tray icon
   - `launch.bat` – Windows application launcher
   - `README.md` – Project documentation
     
@@ -32,19 +31,17 @@ BriefDesk is a Python-based desktop productivity application which integrates wi
 - CSS       –     Interface styling
 - PyWebView –     Desktop window and Python–JavaScript integration
 - PyWin32   –     Microsoft Outlook integration through COM
-- Pillow    –     Icon image handling
+
 
 
 ## Features
 
-- Email Management:         Retrieves emails received within the last 24 hours.
-- Priority Classification:  Automatically categorizes emails into high, medium, and low priority based on keywords.
-- Approval Requests:        Identifies emails related to approvals and authorization requests.
-- Vacation Management:      Categorizes emails related to leave, vacations, and availability.
-- Meeting Status:           Highlights ongoing, upcoming, and completed meetings (Based on priority).
-- Quick Email Access:       Opens selected emails and calendar items directly in Outlook.
-- Desktop Interface:        Uses HTML and CSS with PyWebView to provide a desktop interface.
-
+- **Email Management:** Retrieves emails received within the last 24 hours.
+- **Priority Classification:** Automatically categorizes emails into high, medium, and low priority based on keywords.
+- **Approval Requests:** Identifies emails related to approvals and authorization requests.
+- **Vacation Management:** Categorizes emails related to leave, vacations, and availability.
+- **Meeting Status:** Highlights ongoing, upcoming, and completed meetings based on priority.
+- **Quick Email Access:** Opens selected emails and calendar items directly in Outlook.
 
 
 ## Prerequisites
